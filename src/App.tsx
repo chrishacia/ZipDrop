@@ -6,7 +6,7 @@ const App: React.FC = () => {
   return (
     <div className="container mt-4">
       <Routes>
-        <Route path="/" element={<ZipDrop />} />
+        <Route path="/ZipDrop" element={<ZipDrop />} />
       </Routes>
     </div>
   );
