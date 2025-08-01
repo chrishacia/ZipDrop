@@ -1,4 +1,8 @@
-# React + TypeScript + Vite
+# ZipDrop
+
+Live: <https://chrishacia.github.io/ZipDrop>
+
+## (STOCK) React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
