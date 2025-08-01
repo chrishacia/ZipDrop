@@ -123,7 +123,7 @@ const ZipDrop: React.FC = () => {
                 <button className="btn btn-success me-2" onClick={createZip}>Create ZIP</button>
                 <button className="btn btn-danger me-2" onClick={resetViewState}>Reset</button>
                 <button
-                    className="btn btn-secondary"
+                    className="btn btn-outline-success me-2"
                     onClick={() => {
                         const next = new Set(excludePatterns)
                         for (const p of getDefaultExcludePatterns()) next.add(p)
@@ -132,7 +132,11 @@ const ZipDrop: React.FC = () => {
                 >
                     Load Example Exclude Patterns
                 </button>
+
+                <a href="https://github.com/chrishacia/ZipDrop" target="_blank" className="btn btn-outline-secondary float-end" onClick={resetViewState}>GitHub</a>
+
             </div>
+
 
             <ExcludeTagList
                 patterns={excludePatterns}
