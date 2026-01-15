@@ -10,14 +10,16 @@ interface GlobalStatsCardProps {
   onLoadPeriod: (period: 'daily' | 'weekly' | 'monthly') => void
 }
 
-const formatSize = (bytes: number): string => {
+const formatSize = (bytes: number | null | undefined): string => {
+  if (bytes == null || isNaN(bytes)) return '0 B'
   const units = ['B', 'KB', 'MB', 'GB', 'TB']
   if (bytes === 0) return '0 B'
   const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(1024))
   return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`
 }
 
-const formatNumber = (num: number): string => {
+const formatNumber = (num: number | null | undefined): string => {
+  if (num == null || isNaN(num)) return '0'
   if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
   if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
   return num.toLocaleString()
