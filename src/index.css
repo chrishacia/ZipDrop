@@ -1,68 +1,576 @@
+/* ZipDrop - Modern Dark Theme Styles */
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  /* Color palette */
+  --zd-bg-primary: #1a1d21;
+  --zd-bg-secondary: #212529;
+  --zd-bg-tertiary: #2d3238;
+  --zd-text-primary: #e9ecef;
+  --zd-text-secondary: #adb5bd;
+  --zd-text-muted: #6c757d;
+  --zd-accent-primary: #0d6efd;
+  --zd-accent-success: #198754;
+  --zd-accent-warning: #ffc107;
+  --zd-accent-danger: #dc3545;
+  --zd-accent-info: #0dcaf0;
+  --zd-border-color: #495057;
+  
+  /* Typography */
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
+  
+  /* Color scheme */
+  color-scheme: dark;
+  color: var(--zd-text-primary);
+  background-color: var(--zd-bg-primary);
+  
+  /* Font rendering */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+/* Reset and base styles */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--zd-bg-primary) 0%, #0d1117 100%);
+}
+
+#root {
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--zd-accent-primary);
+  outline-offset: 2px;
 }
 
-button {
+/* Skip to content link for keyboard users */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--zd-accent-primary);
+  color: white;
+  padding: 8px 16px;
+  z-index: 100;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Typography - Force all text to be readable in dark mode */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  margin-top: 0;
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--zd-text-primary) !important;
+}
+
+/* Ensure body text is always readable */
+body {
+  color: var(--zd-text-primary) !important;
+}
+
+p, span, label, small {
+  color: inherit;
+}
+
+/* Display headings specifically - override Bootstrap */
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  color: var(--zd-text-primary) !important;
+}
+
+/* Lead text */
+.lead {
+  color: var(--zd-text-secondary) !important;
+}
+
+/* Ensure header element text is visible */
+header h1,
+header .h1,
+header .display-4 {
+  color: var(--zd-text-primary) !important;
+}
+
+header p,
+header .lead {
+  color: var(--zd-text-secondary) !important;
+}
+
+/* Links */
+a {
+  color: var(--zd-accent-info);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #3dd5f3;
+  text-decoration: underline;
+}
+
+/* Code elements */
+code {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  font-size: 0.875em;
+  padding: 0.125em 0.375em;
+  background-color: var(--zd-bg-tertiary);
+  border-radius: 4px;
+  color: var(--zd-accent-info);
+}
+
+/* Card overrides for dark theme */
+.card {
+  background-color: var(--zd-bg-secondary);
+  border-color: var(--zd-border-color);
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: box-shadow 0.2s ease;
+  color: var(--zd-text-primary);
+  overflow: hidden;
 }
 
-@media (prefers-color-scheme: light) {
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+  background-color: var(--zd-bg-tertiary);
+  border-bottom: 1px solid var(--zd-border-color);
+  color: var(--zd-text-primary);
+  padding: 1rem 1.25rem;
+}
+
+.card-header h2,
+.card-header h3,
+.card-header h4,
+.card-header h5,
+.card-header .h2,
+.card-header .h3,
+.card-header .h4,
+.card-header .h5 {
+  color: var(--zd-text-primary);
+  display: flex;
+  align-items: center;
+}
+
+.card-header .bi {
+  opacity: 0.8;
+}
+
+.card-body {
+  color: var(--zd-text-primary);
+  padding: 1.25rem;
+}
+
+/* Ensure all text in cards is readable */
+.card .text-muted {
+  color: var(--zd-text-secondary) !important;
+}
+
+.card p,
+.card span,
+.card label,
+.card small {
+  color: inherit;
+}
+
+/* Global text-muted override - Bootstrap's default is too dark */
+.text-muted {
+  color: var(--zd-text-secondary) !important;
+}
+
+/* Override Bootstrap dark background text utilities */
+.bg-dark,
+.bg-dark * {
+  color: var(--zd-text-primary);
+}
+
+.bg-dark .text-muted {
+  color: var(--zd-text-secondary) !important;
+}
+
+/* Ensure main container text is visible */
+main, .container, .container-fluid {
+  color: var(--zd-text-primary);
+}
+
+/* Empty state text (like "no exclusions") */
+.border-secondary.p-2,
+.border.rounded.p-2 {
+  color: var(--zd-text-secondary) !important;
+}
+
+/* Bootstrap small text override */
+.small, small {
+  color: inherit;
+}
+
+/* Text muted with small class combination */
+.text-muted.small,
+.small.text-muted {
+  color: var(--zd-text-secondary) !important;
+}
+
+/* Form controls dark theme */
+.form-control {
+  background-color: var(--zd-bg-tertiary);
+  border-color: var(--zd-border-color);
+  color: var(--zd-text-primary);
+}
+
+.form-control:focus {
+  background-color: var(--zd-bg-secondary);
+  border-color: var(--zd-accent-primary);
+  color: var(--zd-text-primary);
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-control::placeholder {
+  color: var(--zd-text-muted);
+}
+
+/* Input group styling */
+.input-group-text {
+  background-color: var(--zd-bg-tertiary);
+  border-color: var(--zd-border-color);
+  color: var(--zd-text-secondary);
+}
+
+/* Checkbox styling */
+.form-check-input {
+  width: 1.1em;
+  height: 1.1em;
+  margin-top: 0.2em;
+  background-color: var(--zd-bg-tertiary);
+  border-color: var(--zd-border-color);
+}
+
+.form-check-input:checked {
+  background-color: var(--zd-accent-success);
+  border-color: var(--zd-accent-success);
+}
+
+.form-check-input:focus {
+  box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}
+
+/* Button enhancements */
+.btn {
+  font-weight: 500;
+  transition: all 0.15s ease;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+  border: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0b5ed7 0%, #0a58ca 100%);
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #198754 0%, #157347 100%);
+  border: none;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: linear-gradient(135deg, #157347 0%, #146c43 100%);
+  transform: translateY(-1px);
+}
+
+.btn-outline-secondary {
+  border-color: var(--zd-border-color);
+  color: var(--zd-text-secondary);
+}
+
+.btn-outline-secondary:hover:not(:disabled) {
+  background-color: var(--zd-bg-tertiary);
+  border-color: var(--zd-border-color);
+  color: var(--zd-text-primary);
+}
+
+.btn-outline-light {
+  border-color: var(--zd-border-color);
+}
+
+.btn-outline-light:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-outline-info {
+  border-color: var(--zd-accent-info);
+}
+
+.btn-outline-danger {
+  border-color: rgba(220, 53, 69, 0.5);
+}
+
+.btn-outline-danger:hover:not(:disabled) {
+  background-color: rgba(220, 53, 69, 0.1);
+  border-color: var(--zd-accent-danger);
+}
+
+/* Badge styling */
+.badge {
+  font-weight: 500;
+  font-size: 0.75rem;
+  padding: 0.35em 0.65em;
+  border-radius: 4px;
+}
+
+.badge.bg-secondary {
+  background-color: var(--zd-bg-tertiary) !important;
+  color: var(--zd-text-secondary);
+}
+
+.badge.bg-success {
+  background-color: rgba(25, 135, 84, 0.2) !important;
+  color: #75b798;
+}
+
+/* Alert styling */
+.alert-dark {
+  background-color: var(--zd-bg-tertiary);
+  border-color: var(--zd-border-color);
+  border-radius: 8px;
+  color: var(--zd-text-primary);
+}
+
+.alert-info {
+  background-color: rgba(13, 202, 240, 0.1);
+  border-color: rgba(13, 202, 240, 0.2);
+  border-radius: 8px;
+  color: var(--zd-text-primary);
+}
+
+/* Override Bootstrap's bg-dark classes for proper text contrast */
+.bg-dark {
+  background-color: var(--zd-bg-secondary) !important;
+  color: var(--zd-text-primary) !important;
+}
+
+.bg-dark-subtle {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  color: var(--zd-text-primary) !important;
+}
+
+/* Ensure proper text colors throughout */
+.text-white {
+  color: #ffffff !important;
+}
+
+.text-light {
+  color: var(--zd-text-primary) !important;
+}
+
+/* Table styling */
+.table-dark {
+  --bs-table-bg: var(--zd-bg-tertiary);
+  --bs-table-striped-bg: var(--zd-bg-secondary);
+  --bs-table-hover-bg: rgba(255, 255, 255, 0.075);
+  --bs-table-color: var(--zd-text-primary);
+  border-color: var(--zd-border-color);
+  color: var(--zd-text-primary);
+}
+
+.table-dark th,
+.table-dark td {
+  color: var(--zd-text-primary);
+}
+
+.table-dark thead th {
+  color: var(--zd-text-secondary);
+}
+
+/* Progress bar */
+.progress {
+  background-color: var(--zd-bg-tertiary);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Tree item styles */
+.tree-item {
+  transition: background-color 0.15s ease;
+}
+
+.tree-item-content:hover {
+  background-color: var(--zd-bg-tertiary);
+}
+
+.tree-item-name {
+  cursor: pointer;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  font-size: 0.9rem;
+}
+
+.tree-folder-toggle {
+  color: inherit;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.tree-folder-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--zd-bg-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--zd-border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--zd-text-muted);
+}
+
+/* Toast animation */
+@keyframes shrink {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* Spinner */
+.spinner-border {
+  --bs-spinner-border-width: 3px;
+}
+
+/* Stat items */
+.stat-item {
+  background-color: var(--zd-bg-tertiary);
+  border: 1px solid var(--zd-border-color);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  color: var(--zd-text-primary);
+}
+
+.stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.stat-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  color: var(--zd-text-secondary);
+}
+
+/* Global text color overrides for Bootstrap dark components */
+[class*="bg-dark"] {
+  color: var(--zd-text-primary);
+}
+
+/* Ensure border-secondary uses our colors */
+.border-secondary {
+  border-color: var(--zd-border-color) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .display-4 {
+    font-size: 2rem;
+  }
+  
+  .btn-lg {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+  }
+  
+  .stat-item {
+    padding: 0.75rem !important;
+  }
+  
+  .stat-value {
+    font-size: 1.25rem !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  
+  .btn, .toast-container {
+    display: none !important;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    --zd-border-color: #fff;
   }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+  
+  .card, .btn, .form-control {
+    border-width: 2px;
   }
 }

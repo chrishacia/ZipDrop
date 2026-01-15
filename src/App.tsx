@@ -1,14 +1,15 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import type { FC } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import ZipDrop from './pages/ZipDrop';
 
-const App: React.FC = () => {
+const App: FC = () => {
   return (
-    <div className="container mt-4">
-      <Routes>
-        <Route path="/ZipDrop" element={<ZipDrop />} />
-      </Routes>
-    </div>
+    <Routes>
+      <Route path="/" element={<ZipDrop />} />
+      <Route path="/ZipDrop" element={<ZipDrop />} />
+      {/* Catch-all redirect to home */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 };
 

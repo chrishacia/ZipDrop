@@ -1,42 +1,126 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* App-level styles - mostly handled by index.css now */
+
+/* Container max-width override */
+.container {
+  max-width: 1000px;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Additional utility classes */
+.bg-dark-subtle {
+  background-color: rgba(255, 255, 255, 0.03) !important;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Toast specific positioning */
+.toast-container {
+  pointer-events: none;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.toast-container .toast {
+  pointer-events: auto;
 }
 
-.card {
-  padding: 2em;
+/* Tree container scrolling shadow */
+.tree-container {
+  position: relative;
 }
 
-.read-the-docs {
-  color: #888;
+.tree-container::before,
+.tree-container::after {
+  content: '';
+  position: sticky;
+  left: 0;
+  right: 0;
+  height: 20px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tree-container::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--zd-bg-secondary, #212529), transparent);
+}
+
+.tree-container::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--zd-bg-secondary, #212529), transparent);
+}
+
+/* Drop Zone Styles */
+.drop-zone {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: var(--zd-bg-secondary, #212529);
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drop-zone:hover:not([aria-disabled="true"]) {
+  border-color: var(--zd-accent-primary, #0d6efd) !important;
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+.drop-zone:focus-visible {
+  outline: 2px solid var(--zd-accent-primary, #0d6efd);
+  outline-offset: 2px;
+}
+
+.drop-zone[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.drop-zone-active {
+  border-color: var(--zd-accent-primary, #0d6efd) !important;
+  background-color: rgba(13, 110, 253, 0.1) !important;
+  transform: scale(1.01);
+}
+
+.drop-zone-has-folder {
+  border-style: solid !important;
+  background-color: rgba(25, 135, 84, 0.05);
+}
+
+.drop-zone-has-folder:hover:not([aria-disabled="true"]) {
+  background-color: rgba(25, 135, 84, 0.1);
+  border-color: var(--zd-accent-success, #198754) !important;
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}
+
+/* Pattern Presets Dropdown */
+.dropdown-menu-dark {
+  background-color: var(--zd-bg-secondary, #212529);
+  border-color: var(--zd-border-color, #495057);
+}
+
+.dropdown-menu-dark .dropdown-item:hover {
+  background-color: var(--zd-bg-tertiary, #2d3238);
+}
+
+/* Preset item styling */
+.dropdown-menu .border-bottom:last-child {
+  border-bottom: none !important;
+}
+
+/* Smooth scrolling for dropdown */
+.dropdown-menu {
+  scrollbar-width: thin;
+  scrollbar-color: var(--zd-border-color, #495057) transparent;
+}
+
+.dropdown-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+  background-color: var(--zd-border-color, #495057);
+  border-radius: 3px;
 }

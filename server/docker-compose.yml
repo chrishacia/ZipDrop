@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: zipdrop-api
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://zipdrop:${DB_PASSWORD}@db:5432/zipdrop
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://chrishacia.github.io}
+      - PORT=3000
+    ports:
+      - "127.0.0.1:3847:3000"  # Only expose to localhost, NGINX will proxy
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - zipdrop-network
+
+  db:
+    image: postgres:16-alpine
+    container_name: zipdrop-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=zipdrop
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=zipdrop
+    volumes:
+      - zipdrop-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zipdrop -d zipdrop"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zipdrop-network
+
+volumes:
+  zipdrop-data:
+    name: zipdrop-postgres-data
+
+networks:
+  zipdrop-network:
+    name: zipdrop-network
