@@ -117,7 +117,7 @@ const Analytics: FC<AnalyticsProps> = ({ onBack }) => {
             <i className="bi bi-stars me-1"></i>
             Wrapped
           </Link>
-          <button 
+          <button
             className="btn btn-outline-primary btn-sm"
             onClick={refreshAll}
             disabled={isLoading}
@@ -158,7 +158,7 @@ const Analytics: FC<AnalyticsProps> = ({ onBack }) => {
       {activeTab === 'achievements' && <Achievements />}
       {activeTab === 'heatmap' && <Heatmap />}
       {activeTab === 'records' && <Records />}
-      
+
       {activeTab === 'overview' && (isLoading && !averages ? (
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status">
@@ -237,30 +237,30 @@ const Analytics: FC<AnalyticsProps> = ({ onBack }) => {
                     <ResponsiveContainer width="100%" height={300}>
                       <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                        <XAxis 
-                          dataKey="date" 
-                          stroke="#888" 
+                        <XAxis
+                          dataKey="date"
+                          stroke="#888"
                           tick={{ fill: '#888', fontSize: 11 }}
                           interval="preserveStartEnd"
                         />
                         <YAxis stroke="#888" tick={{ fill: '#888', fontSize: 11 }} />
-                        <Tooltip 
+                        <Tooltip
                           contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #444' }}
                           labelStyle={{ color: '#fff' }}
                         />
                         <Legend />
-                        <Line 
-                          type="monotone" 
-                          dataKey="zips_created" 
-                          stroke="#0d6efd" 
+                        <Line
+                          type="monotone"
+                          dataKey="zips_created"
+                          stroke="#0d6efd"
                           strokeWidth={2}
                           name="Zips Created"
                           dot={false}
                         />
-                        <Line 
-                          type="monotone" 
-                          dataKey="files_zipped" 
-                          stroke="#198754" 
+                        <Line
+                          type="monotone"
+                          dataKey="files_zipped"
+                          stroke="#198754"
                           strokeWidth={2}
                           name="Files Zipped"
                           dot={false}
@@ -291,14 +291,14 @@ const Analytics: FC<AnalyticsProps> = ({ onBack }) => {
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={weekdayData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                        <XAxis 
-                          dataKey="day_name" 
-                          stroke="#888" 
+                        <XAxis
+                          dataKey="day_name"
+                          stroke="#888"
                           tick={{ fill: '#888', fontSize: 10 }}
                           tickFormatter={(val) => val.substring(0, 3)}
                         />
                         <YAxis stroke="#888" tick={{ fill: '#888', fontSize: 11 }} />
-                        <Tooltip 
+                        <Tooltip
                           contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #444' }}
                           labelStyle={{ color: '#fff' }}
                         />
@@ -332,22 +332,22 @@ const Analytics: FC<AnalyticsProps> = ({ onBack }) => {
                     <ResponsiveContainer width="100%" height={250}>
                       <AreaChart data={hourlyChartData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                        <XAxis 
-                          dataKey="label" 
-                          stroke="#888" 
+                        <XAxis
+                          dataKey="label"
+                          stroke="#888"
                           tick={{ fill: '#888', fontSize: 10 }}
                           interval={2}
                         />
                         <YAxis stroke="#888" tick={{ fill: '#888', fontSize: 11 }} />
-                        <Tooltip 
+                        <Tooltip
                           contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #444' }}
                           labelStyle={{ color: '#fff' }}
                         />
-                        <Area 
-                          type="monotone" 
-                          dataKey="zips_created" 
-                          stroke="#0dcaf0" 
-                          fill="#0dcaf0" 
+                        <Area
+                          type="monotone"
+                          dataKey="zips_created"
+                          stroke="#0dcaf0"
+                          fill="#0dcaf0"
                           fillOpacity={0.3}
                           name="Zips Created"
                         />
@@ -377,32 +377,32 @@ const Analytics: FC<AnalyticsProps> = ({ onBack }) => {
                     <ResponsiveContainer width="100%" height={250}>
                       <AreaChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                        <XAxis 
-                          dataKey="date" 
-                          stroke="#888" 
+                        <XAxis
+                          dataKey="date"
+                          stroke="#888"
                           tick={{ fill: '#888', fontSize: 10 }}
                           interval="preserveStartEnd"
                         />
                         <YAxis stroke="#888" tick={{ fill: '#888', fontSize: 11 }} />
-                        <Tooltip 
+                        <Tooltip
                           contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #444' }}
                           labelStyle={{ color: '#fff' }}
                           formatter={(value) => value != null ? `${Number(value).toFixed(2)} MB` : '0 MB'}
                         />
                         <Legend />
-                        <Area 
-                          type="monotone" 
-                          dataKey="raw_mb" 
-                          stroke="#ffc107" 
-                          fill="#ffc107" 
+                        <Area
+                          type="monotone"
+                          dataKey="raw_mb"
+                          stroke="#ffc107"
+                          fill="#ffc107"
                           fillOpacity={0.3}
                           name="Processed (MB)"
                         />
-                        <Area 
-                          type="monotone" 
-                          dataKey="saved_mb" 
-                          stroke="#198754" 
-                          fill="#198754" 
+                        <Area
+                          type="monotone"
+                          dataKey="saved_mb"
+                          stroke="#198754"
+                          fill="#198754"
                           fillOpacity={0.3}
                           name="Saved (MB)"
                         />
