@@ -113,7 +113,7 @@ const Analytics: FC<AnalyticsProps> = ({ onBack }) => {
           </span>
         </div>
         <div className="d-flex gap-2">
-          <Link to="/ZipDrop/wrapped" className="btn btn-outline-warning btn-sm">
+          <Link to="/wrapped" className="btn btn-outline-warning btn-sm">
             <i className="bi bi-stars me-1"></i>
             Wrapped
           </Link>

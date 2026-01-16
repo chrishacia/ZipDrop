@@ -19,13 +19,9 @@ const App: FC = () => {
   return (
     <Routes>
       <Route path="/" element={<ZipDrop />} />
-      <Route path="/ZipDrop" element={<ZipDrop />} />
       <Route path="/analytics" element={<AnalyticsWrapper />} />
-      <Route path="/ZipDrop/analytics" element={<AnalyticsWrapper />} />
       <Route path="/wrapped" element={<WrappedWrapper />} />
       <Route path="/wrapped/:year" element={<WrappedWrapper />} />
-      <Route path="/ZipDrop/wrapped" element={<WrappedWrapper />} />
-      <Route path="/ZipDrop/wrapped/:year" element={<WrappedWrapper />} />
       {/* Catch-all redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

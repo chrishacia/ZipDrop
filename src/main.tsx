@@ -8,9 +8,12 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import './index.css';
 import './App.css';
 
+// Use /ZipDrop as basename for GitHub Pages deployment
+const basename = import.meta.env.BASE_URL || '/';
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <ToastProvider>
         <App />
       </ToastProvider>
