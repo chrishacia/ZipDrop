@@ -25,7 +25,7 @@ const getRankEmoji = (rank: number): string => {
 export default function Leaderboard() {
   const [sortBy, setSortBy] = useState<'zips' | 'files' | 'bytes_saved'>('zips')
   const { leaderboard, myRank, isLoading, error, refresh } = useLeaderboard(sortBy, 15)
-  const clientId = typeof window !== 'undefined' ? localStorage.getItem('zipdrop_client_id') : null
+  const clientId = typeof window !== 'undefined' ? localStorage.getItem('zipdrop:clientId') : null
 
   if (error) {
     return (

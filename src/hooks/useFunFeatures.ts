@@ -2,10 +2,10 @@ import { useState, useEffect, useCallback } from 'react'
 
 const API_BASE_URL = import.meta.env.VITE_ZIPDROP_API_URL || ''
 
-// Get client ID from localStorage
+// Get client ID from localStorage (same key as useGlobalStats)
 const getClientId = (): string | null => {
   if (typeof window === 'undefined') return null
-  return localStorage.getItem('zipdrop_client_id')
+  return localStorage.getItem('zipdrop:clientId')
 }
 
 // Types

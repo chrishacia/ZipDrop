@@ -21,7 +21,7 @@ export default function Wrapped({ onBack, initialYear }: WrappedProps) {
   const [isPersonal, setIsPersonal] = useState(false)
   const { wrapped, isLoading, error, refresh } = useWrapped(year, isPersonal)
   
-  const hasClientId = typeof window !== 'undefined' && localStorage.getItem('zipdrop_client_id')
+  const hasClientId = typeof window !== 'undefined' && localStorage.getItem('zipdrop:clientId')
   const availableYears = Array.from({ length: currentYear - 2024 + 1 }, (_, i) => 2024 + i)
 
   if (error) {

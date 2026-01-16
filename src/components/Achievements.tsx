@@ -18,7 +18,7 @@ const formatThreshold = (threshold: number, type: string): string => {
 export default function Achievements() {
   const { achievements, totalUnlocked, currentStreak, isLoading, error, refresh } = useAchievements()
 
-  if (!localStorage.getItem('zipdrop_client_id')) {
+  if (!localStorage.getItem('zipdrop:clientId')) {
     return (
       <div className="card bg-dark border-secondary">
         <div className="card-body text-center py-4">
