@@ -7,6 +7,9 @@ const { Pool } = require('pg');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy for rate limiting behind nginx
+app.set('trust proxy', 1);
+
 // Database connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -96,6 +99,13 @@ app.post('/api/events', async (req, res) => {
   }
 });
 
+// Helper to convert bigint strings to numbers
+const toBigIntNumber = (val) => {
+  if (val === null || val === undefined) return 0;
+  const num = Number(val);
+  return isNaN(num) ? 0 : num;
+};
+
 // Get all-time global stats
 app.get('/api/stats', async (req, res) => {
   try {
@@ -111,7 +121,16 @@ app.get('/api/stats', async (req, res) => {
       FROM zip_events
     `);
 
-    res.json(result.rows[0]);
+    const row = result.rows[0];
+    res.json({
+      total_zips: row.total_zips,
+      total_files: toBigIntNumber(row.total_files),
+      total_raw_bytes: toBigIntNumber(row.total_raw_bytes),
+      total_zipped_bytes: toBigIntNumber(row.total_zipped_bytes),
+      total_bytes_saved: toBigIntNumber(row.total_bytes_saved),
+      first_event: row.first_event,
+      last_event: row.last_event,
+    });
   } catch (error) {
     console.error('Error fetching stats:', error);
     res.status(500).json({ error: 'Failed to fetch stats' });
@@ -132,7 +151,14 @@ app.get('/api/stats/today', async (req, res) => {
       WHERE DATE(created_at) = CURRENT_DATE
     `);
 
-    res.json(result.rows[0]);
+    const row = result.rows[0];
+    res.json({
+      zips_created: row.zips_created,
+      files_zipped: toBigIntNumber(row.files_zipped),
+      raw_bytes: toBigIntNumber(row.raw_bytes),
+      zipped_bytes: toBigIntNumber(row.zipped_bytes),
+      bytes_saved: toBigIntNumber(row.bytes_saved),
+    });
   } catch (error) {
     console.error('Error fetching today stats:', error);
     res.status(500).json({ error: 'Failed to fetch stats' });
@@ -175,9 +201,18 @@ app.get('/api/stats/:period', async (req, res) => {
       LIMIT $2
     `, [truncate, limit]);
 
+    const data = result.rows.map(row => ({
+      period: row.period,
+      zips_created: row.zips_created,
+      files_zipped: toBigIntNumber(row.files_zipped),
+      raw_bytes: toBigIntNumber(row.raw_bytes),
+      zipped_bytes: toBigIntNumber(row.zipped_bytes),
+      bytes_saved: toBigIntNumber(row.bytes_saved),
+    }));
+
     res.json({
       period,
-      data: result.rows,
+      data,
     });
   } catch (error) {
     console.error('Error fetching periodic stats:', error);
