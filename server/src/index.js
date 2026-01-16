@@ -47,13 +47,26 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // Return false instead of error to let our middleware handle it
+      callback(null, false);
     }
   },
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'X-ZipDrop-Signature', 'X-ZipDrop-Timestamp'],
   maxAge: 86400, // Cache preflight for 24 hours
 }));
+
+// After CORS, check if origin was allowed for POST requests
+app.use((req, res, next) => {
+  if (req.method === 'POST' && req.path.includes('/api/')) {
+    const origin = req.get('Origin');
+    if (!origin || !allowedOrigins.includes(origin)) {
+      console.log(`Blocked POST from origin: ${origin || 'none'}, IP: ${req.ip}`);
+      return res.status(403).json({ error: 'Origin not allowed' });
+    }
+  }
+  next();
+});
 
 // Stricter rate limiting for POST (event recording)
 const postLimiter = rateLimit({
@@ -77,29 +90,16 @@ const getLimiter = rateLimit({
 app.use('/api/events', postLimiter);
 app.use('/api/stats', getLimiter);
 
-// Middleware to validate POST requests come from legitimate sources
-const validateOrigin = (req, res, next) => {
+// Middleware to validate referer header (additional check)
+const validateReferer = (req, res, next) => {
   // Skip for GET requests
   if (req.method !== 'POST') {
     return next();
   }
 
-  const origin = req.get('origin');
   const referer = req.get('referer');
 
-  // Must have origin header for POST
-  if (!origin) {
-    console.warn('POST request without origin header from IP:', req.ip);
-    return res.status(403).json({ error: 'Origin required' });
-  }
-
-  // Validate origin is allowed
-  if (!allowedOrigins.includes(origin)) {
-    console.warn('POST from unauthorized origin:', origin, 'IP:', req.ip);
-    return res.status(403).json({ error: 'Unauthorized origin' });
-  }
-
-  // If referer is present, validate it too
+  // If referer is present, validate it
   if (referer) {
     const refererAllowed = allowedReferrers.some(allowed => referer.startsWith(allowed));
     if (!refererAllowed) {
@@ -138,7 +138,7 @@ const validateSignature = (req, res, next) => {
   next();
 };
 
-app.use('/api/events', validateOrigin, validateSignature);
+app.use('/api/events', validateReferer, validateSignature);
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
