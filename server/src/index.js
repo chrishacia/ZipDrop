@@ -2,10 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Secret for HMAC validation - client-side key (provides integrity, not secrecy)
+const API_SECRET = process.env.API_SECRET || 'zipdrop-client-v1';
 
 // Trust proxy for rate limiting behind nginx
 app.set('trust proxy', 1);
@@ -20,15 +24,25 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://chrishacia.githu
   .split(',')
   .map(origin => origin.trim());
 
+// Allowed referrers (GitHub Pages)
+const allowedReferrers = [
+  'https://chrishacia.github.io',
+  'http://localhost:5173', // Dev mode
+  'http://localhost:4173', // Preview mode
+];
+
 // Middleware
 app.use(helmet());
 app.use(express.json({ limit: '1kb' })); // Small payload limit
 
-// CORS configuration
+// CORS configuration - STRICT mode for POST requests
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
+    // For GET requests (stats), be more lenient
+    if (!origin) {
+      // Only allow no-origin for health checks via specific path check later
+      return callback(null, true);
+    }
     
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -37,19 +51,94 @@ app.use(cors({
     }
   },
   methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type'],
+  allowedHeaders: ['Content-Type', 'X-ZipDrop-Signature', 'X-ZipDrop-Timestamp'],
   maxAge: 86400, // Cache preflight for 24 hours
 }));
 
-// Rate limiting - 30 requests per minute per IP
-const limiter = rateLimit({
+// Stricter rate limiting for POST (event recording)
+const postLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 30,
+  max: 10, // Only 10 zip events per minute per IP
+  message: { error: 'Too many zip events, please slow down' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// General rate limiting for GET requests
+const getLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60, // 60 reads per minute
   message: { error: 'Too many requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use(limiter);
+
+// Apply rate limiters
+app.use('/api/events', postLimiter);
+app.use('/api/stats', getLimiter);
+
+// Middleware to validate POST requests come from legitimate sources
+const validateOrigin = (req, res, next) => {
+  // Skip for GET requests
+  if (req.method !== 'POST') {
+    return next();
+  }
+
+  const origin = req.get('origin');
+  const referer = req.get('referer');
+
+  // Must have origin header for POST
+  if (!origin) {
+    console.warn('POST request without origin header from IP:', req.ip);
+    return res.status(403).json({ error: 'Origin required' });
+  }
+
+  // Validate origin is allowed
+  if (!allowedOrigins.includes(origin)) {
+    console.warn('POST from unauthorized origin:', origin, 'IP:', req.ip);
+    return res.status(403).json({ error: 'Unauthorized origin' });
+  }
+
+  // If referer is present, validate it too
+  if (referer) {
+    const refererAllowed = allowedReferrers.some(allowed => referer.startsWith(allowed));
+    if (!refererAllowed) {
+      console.warn('POST with suspicious referer:', referer, 'IP:', req.ip);
+      // Don't block, just log - referer can be stripped by browsers
+    }
+  }
+
+  next();
+};
+
+// HMAC signature validation for event submissions
+const validateSignature = (req, res, next) => {
+  const signature = req.get('X-ZipDrop-Signature');
+  const timestamp = req.get('X-ZipDrop-Timestamp');
+
+  // Signature is optional but recommended - if present, validate it
+  if (signature && timestamp) {
+    // Check timestamp is within 5 minutes
+    const now = Date.now();
+    const reqTime = parseInt(timestamp, 10);
+    if (isNaN(reqTime) || Math.abs(now - reqTime) > 5 * 60 * 1000) {
+      return res.status(403).json({ error: 'Request expired' });
+    }
+
+    // Validate HMAC
+    const payload = JSON.stringify(req.body) + timestamp;
+    const expectedSig = crypto.createHmac('sha256', API_SECRET).update(payload).digest('hex');
+    
+    if (signature !== expectedSig) {
+      console.warn('Invalid signature from IP:', req.ip);
+      return res.status(403).json({ error: 'Invalid signature' });
+    }
+  }
+
+  next();
+};
+
+app.use('/api/events', validateOrigin, validateSignature);
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
@@ -66,11 +155,16 @@ app.post('/api/events', async (req, res) => {
   try {
     const { filesCount, rawSizeBytes, zippedSizeBytes, clientId } = req.body;
 
-    // Validate input
+    // Validate input types
     if (typeof filesCount !== 'number' || filesCount < 0 ||
         typeof rawSizeBytes !== 'number' || rawSizeBytes < 0 ||
         typeof zippedSizeBytes !== 'number' || zippedSizeBytes < 0) {
       return res.status(400).json({ error: 'Invalid input data' });
+    }
+
+    // Must be integers (no decimals)
+    if (!Number.isInteger(filesCount) || !Number.isInteger(rawSizeBytes) || !Number.isInteger(zippedSizeBytes)) {
+      return res.status(400).json({ error: 'Values must be integers' });
     }
 
     // Reasonable limits to prevent abuse
@@ -78,8 +172,26 @@ app.post('/api/events', async (req, res) => {
       return res.status(400).json({ error: 'Values exceed reasonable limits' });
     }
 
+    // Sanity checks - these would be impossible in real usage
+    if (filesCount === 0 && rawSizeBytes > 0) {
+      return res.status(400).json({ error: 'Invalid: files=0 but size>0' });
+    }
+    if (zippedSizeBytes > rawSizeBytes * 1.1) {
+      // Allow 10% margin for zip overhead on tiny files, but not more
+      return res.status(400).json({ error: 'Invalid: zipped size larger than raw' });
+    }
+    if (filesCount > 0 && rawSizeBytes === 0) {
+      return res.status(400).json({ error: 'Invalid: has files but zero size' });
+    }
+
+    // Validate clientId format if provided (should be UUID)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const sanitizedClientId = clientId && uuidRegex.test(clientId) ? clientId : null;
+
     const userAgent = (req.get('user-agent') || '').substring(0, 255);
-    const sanitizedClientId = clientId ? String(clientId).substring(0, 64) : null;
+
+    // Log for monitoring
+    console.log(`Event: files=${filesCount}, raw=${rawSizeBytes}, zipped=${zippedSizeBytes}, ip=${req.ip}`);
 
     const result = await pool.query(
       `INSERT INTO zip_events (files_count, raw_size_bytes, zipped_size_bytes, client_id, user_agent)

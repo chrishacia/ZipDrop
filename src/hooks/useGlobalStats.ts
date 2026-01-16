@@ -118,13 +118,35 @@ export const useGlobalStats = (): UseGlobalStatsReturn => {
     if (!isEnabled) return false
 
     try {
+      const payload = {
+        ...data,
+        clientId: getClientId(),
+      }
+      const timestamp = Date.now().toString()
+      const body = JSON.stringify(payload)
+
+      // Create HMAC signature for request validation
+      // Note: This provides basic integrity checking - the secret is public in client code
+      // but it adds a layer against casual tampering and helps identify legitimate clients
+      const encoder = new TextEncoder()
+      const keyData = encoder.encode('zipdrop-client-v1')
+      const msgData = encoder.encode(body + timestamp)
+      const cryptoKey = await crypto.subtle.importKey(
+        'raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+      )
+      const signature = await crypto.subtle.sign('HMAC', cryptoKey, msgData)
+      const signatureHex = Array.from(new Uint8Array(signature))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('')
+
       const res = await fetch(`${API_BASE_URL}/api/events`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          clientId: getClientId(),
-        }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-ZipDrop-Timestamp': timestamp,
+          'X-ZipDrop-Signature': signatureHex,
+        },
+        body,
       })
 
       if (res.ok) {
