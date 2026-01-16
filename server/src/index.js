@@ -118,6 +118,27 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
+// Get today's stats (MUST be before :period route)
+app.get('/api/stats/today', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        COUNT(*)::int as zips_created,
+        COALESCE(SUM(files_count), 0)::bigint as files_zipped,
+        COALESCE(SUM(raw_size_bytes), 0)::bigint as raw_bytes,
+        COALESCE(SUM(zipped_size_bytes), 0)::bigint as zipped_bytes,
+        COALESCE(SUM(raw_size_bytes - zipped_size_bytes), 0)::bigint as bytes_saved
+      FROM zip_events
+      WHERE DATE(created_at) = CURRENT_DATE
+    `);
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching today stats:', error);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
 // Get stats by time period
 app.get('/api/stats/:period', async (req, res) => {
   try {
@@ -160,27 +181,6 @@ app.get('/api/stats/:period', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching periodic stats:', error);
-    res.status(500).json({ error: 'Failed to fetch stats' });
-  }
-});
-
-// Get today's stats
-app.get('/api/stats/today', async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT 
-        COUNT(*)::int as zips_created,
-        COALESCE(SUM(files_count), 0)::bigint as files_zipped,
-        COALESCE(SUM(raw_size_bytes), 0)::bigint as raw_bytes,
-        COALESCE(SUM(zipped_size_bytes), 0)::bigint as zipped_bytes,
-        COALESCE(SUM(raw_size_bytes - zipped_size_bytes), 0)::bigint as bytes_saved
-      FROM zip_events
-      WHERE DATE(created_at) = CURRENT_DATE
-    `);
-
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Error fetching today stats:', error);
     res.status(500).json({ error: 'Failed to fetch stats' });
   }
 });
