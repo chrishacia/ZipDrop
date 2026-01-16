@@ -14,7 +14,6 @@ import {
   Legend,
 } from 'recharts'
 import { useAnalytics } from '../hooks/useAnalytics'
-import type { PeriodData, HourlyData, WeekdayData } from '../hooks/useAnalytics'
 
 const formatSize = (bytes: number): string => {
   if (bytes === 0) return '0 B'
@@ -341,7 +340,7 @@ const Analytics: FC<AnalyticsProps> = ({ onBack }) => {
                         <Tooltip 
                           contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #444' }}
                           labelStyle={{ color: '#fff' }}
-                          formatter={(value: number) => `${value.toFixed(2)} MB`}
+                          formatter={(value) => value != null ? `${Number(value).toFixed(2)} MB` : '0 MB'}
                         />
                         <Legend />
                         <Area 
