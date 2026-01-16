@@ -32,7 +32,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="/ZipDrop/assets/index-BT_OXvOG.js"></script>
+    
+    <!-- SPA redirect handler for GitHub Pages -->
+    <script>
+      (function() {
+        const redirect = sessionStorage.getItem('spa-redirect');
+        if (redirect) {
+          sessionStorage.removeItem('spa-redirect');
+          // Use replaceState to restore the original URL without reloading
+          window.history.replaceState(null, '', redirect);
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/ZipDrop/assets/index-BG4BcGbS.js"></script>
     <link rel="stylesheet" crossorigin href="/ZipDrop/assets/index-CL9lFAPw.css">
   </head>
   <body>
