@@ -1,4 +1,5 @@
-import { type FC } from 'react'
+import { useState, type FC } from 'react'
+import { Link } from 'react-router-dom'
 import {
   LineChart,
   Line,
@@ -14,6 +15,11 @@ import {
   Legend,
 } from 'recharts'
 import { useAnalytics } from '../hooks/useAnalytics'
+import Leaderboard from '../components/Leaderboard'
+import Achievements from '../components/Achievements'
+import Heatmap from '../components/Heatmap'
+import LiveCounter from '../components/LiveCounter'
+import Records from '../components/Records'
 
 const formatSize = (bytes: number): string => {
   if (bytes === 0) return '0 B'
@@ -39,11 +45,14 @@ const formatHour = (hour: number): string => {
   return hour < 12 ? `${hour}am` : `${hour - 12}pm`
 }
 
+type TabType = 'overview' | 'leaderboard' | 'achievements' | 'heatmap' | 'records'
+
 interface AnalyticsProps {
   onBack: () => void
 }
 
 const Analytics: FC<AnalyticsProps> = ({ onBack }) => {
+  const [activeTab, setActiveTab] = useState<TabType>('overview')
   const {
     averages,
     hourlyData,
@@ -62,7 +71,7 @@ const Analytics: FC<AnalyticsProps> = ({ onBack }) => {
           <i className="bi bi-exclamation-triangle me-2"></i>
           Analytics API is not configured. Set VITE_ZIPDROP_API_URL environment variable.
         </div>
-        <button className="btn btn-outline-light" onClick={onBack}>
+        <button type="button" className="btn btn-outline-light" onClick={onBack}>
           <i className="bi bi-arrow-left me-2"></i>Back to ZipDrop
         </button>
       </div>
@@ -82,28 +91,60 @@ const Analytics: FC<AnalyticsProps> = ({ onBack }) => {
     label: formatHour(d.hour),
   }))
 
+  const tabs: { id: TabType; label: string; icon: string }[] = [
+    { id: 'overview', label: 'Overview', icon: 'bi-graph-up' },
+    { id: 'leaderboard', label: 'Leaderboard', icon: 'bi-trophy' },
+    { id: 'achievements', label: 'Achievements', icon: 'bi-award' },
+    { id: 'heatmap', label: 'Activity', icon: 'bi-calendar-check' },
+    { id: 'records', label: 'Records', icon: 'bi-bar-chart-fill' },
+  ]
+
   return (
     <div className="container-fluid py-4" style={{ maxWidth: '1400px' }}>
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <button className="btn btn-outline-light btn-sm me-3" onClick={onBack}>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div className="d-flex align-items-center">
+          <button type="button" className="btn btn-outline-light btn-sm me-3" onClick={onBack}>
             <i className="bi bi-arrow-left me-1"></i>Back
           </button>
           <span className="h3 mb-0">
             <i className="bi bi-graph-up me-2 text-primary"></i>
-            Analytics Dashboard
+            Analytics
           </span>
         </div>
-        <button 
-          className="btn btn-outline-primary btn-sm"
-          onClick={refreshAll}
-          disabled={isLoading}
-        >
-          <i className={`bi bi-arrow-clockwise me-1 ${isLoading ? 'spin' : ''}`}></i>
-          Refresh
-        </button>
+        <div className="d-flex gap-2">
+          <Link to="/ZipDrop/wrapped" className="btn btn-outline-warning btn-sm">
+            <i className="bi bi-stars me-1"></i>
+            Wrapped
+          </Link>
+          <button 
+            className="btn btn-outline-primary btn-sm"
+            onClick={refreshAll}
+            disabled={isLoading}
+          >
+            <i className={`bi bi-arrow-clockwise me-1 ${isLoading ? 'spin' : ''}`}></i>
+            Refresh
+          </button>
+        </div>
       </div>
+
+      {/* Live Counter - always visible */}
+      <LiveCounter />
+
+      {/* Tabs */}
+      <ul className="nav nav-tabs mb-4">
+        {tabs.map(tab => (
+          <li className="nav-item" key={tab.id}>
+            <button
+              className={`nav-link ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <i className={`bi ${tab.icon} me-1`}></i>
+              <span className="d-none d-md-inline">{tab.label}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
 
       {error && (
         <div className="alert alert-danger mb-4">
@@ -112,7 +153,13 @@ const Analytics: FC<AnalyticsProps> = ({ onBack }) => {
         </div>
       )}
 
-      {isLoading && !averages ? (
+      {/* Tab Content */}
+      {activeTab === 'leaderboard' && <Leaderboard />}
+      {activeTab === 'achievements' && <Achievements />}
+      {activeTab === 'heatmap' && <Heatmap />}
+      {activeTab === 'records' && <Records />}
+      
+      {activeTab === 'overview' && (isLoading && !averages ? (
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading analytics...</span>
@@ -424,7 +471,7 @@ const Analytics: FC<AnalyticsProps> = ({ onBack }) => {
             </div>
           )}
         </>
-      )}
+      ))}
 
       <style>{`
         .spin {
@@ -433,6 +480,20 @@ const Analytics: FC<AnalyticsProps> = ({ onBack }) => {
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+        .nav-tabs .nav-link {
+          color: #888;
+          border: none;
+          border-bottom: 2px solid transparent;
+        }
+        .nav-tabs .nav-link:hover {
+          color: #fff;
+          border-color: transparent;
+        }
+        .nav-tabs .nav-link.active {
+          color: #0d6efd;
+          background: transparent;
+          border-bottom: 2px solid #0d6efd;
         }
       `}</style>
     </div>
