@@ -220,6 +220,128 @@ app.get('/api/stats/:period', async (req, res) => {
   }
 });
 
+// Get computed averages and insights
+app.get('/api/stats/averages', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        COUNT(*)::int as total_zips,
+        COALESCE(AVG(files_count), 0)::float as avg_files_per_zip,
+        COALESCE(AVG(raw_size_bytes), 0)::float as avg_raw_size,
+        COALESCE(AVG(zipped_size_bytes), 0)::float as avg_zipped_size,
+        COALESCE(AVG(raw_size_bytes - zipped_size_bytes), 0)::float as avg_bytes_saved,
+        CASE 
+          WHEN SUM(raw_size_bytes) > 0 
+          THEN (1 - SUM(zipped_size_bytes)::float / SUM(raw_size_bytes)::float) * 100
+          ELSE 0 
+        END as avg_compression_percent,
+        MAX(files_count)::int as max_files_in_zip,
+        MAX(raw_size_bytes)::bigint as largest_zip_raw,
+        MIN(CASE WHEN files_count > 0 THEN files_count END)::int as min_files_in_zip,
+        MIN(CASE WHEN raw_size_bytes > 0 THEN raw_size_bytes END)::bigint as smallest_zip_raw
+      FROM zip_events
+    `);
+
+    const row = result.rows[0];
+    res.json({
+      total_zips: row.total_zips,
+      avg_files_per_zip: Math.round(row.avg_files_per_zip * 10) / 10,
+      avg_raw_size: Math.round(row.avg_raw_size),
+      avg_zipped_size: Math.round(row.avg_zipped_size),
+      avg_bytes_saved: Math.round(row.avg_bytes_saved),
+      avg_compression_percent: Math.round(row.avg_compression_percent * 10) / 10,
+      max_files_in_zip: row.max_files_in_zip || 0,
+      largest_zip_raw: toBigIntNumber(row.largest_zip_raw),
+      min_files_in_zip: row.min_files_in_zip || 0,
+      smallest_zip_raw: toBigIntNumber(row.smallest_zip_raw),
+    });
+  } catch (error) {
+    console.error('Error fetching averages:', error);
+    res.status(500).json({ error: 'Failed to fetch averages' });
+  }
+});
+
+// Get hourly distribution (last 7 days)
+app.get('/api/stats/hourly', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        EXTRACT(HOUR FROM created_at)::int as hour,
+        COUNT(*)::int as zips_created,
+        COALESCE(SUM(files_count), 0)::bigint as files_zipped,
+        COALESCE(SUM(raw_size_bytes), 0)::bigint as raw_bytes
+      FROM zip_events
+      WHERE created_at >= NOW() - INTERVAL '7 days'
+      GROUP BY EXTRACT(HOUR FROM created_at)
+      ORDER BY hour
+    `);
+
+    // Fill in missing hours with zeros
+    const hourlyData = Array.from({ length: 24 }, (_, i) => ({
+      hour: i,
+      zips_created: 0,
+      files_zipped: 0,
+      raw_bytes: 0,
+    }));
+
+    result.rows.forEach(row => {
+      hourlyData[row.hour] = {
+        hour: row.hour,
+        zips_created: row.zips_created,
+        files_zipped: toBigIntNumber(row.files_zipped),
+        raw_bytes: toBigIntNumber(row.raw_bytes),
+      };
+    });
+
+    res.json(hourlyData);
+  } catch (error) {
+    console.error('Error fetching hourly stats:', error);
+    res.status(500).json({ error: 'Failed to fetch hourly stats' });
+  }
+});
+
+// Get day of week distribution (all time)
+app.get('/api/stats/weekday', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        EXTRACT(DOW FROM created_at)::int as day_of_week,
+        COUNT(*)::int as zips_created,
+        COALESCE(SUM(files_count), 0)::bigint as files_zipped,
+        COALESCE(SUM(raw_size_bytes), 0)::bigint as raw_bytes
+      FROM zip_events
+      GROUP BY EXTRACT(DOW FROM created_at)
+      ORDER BY day_of_week
+    `);
+
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
+    // Fill in missing days with zeros
+    const weekdayData = Array.from({ length: 7 }, (_, i) => ({
+      day_of_week: i,
+      day_name: dayNames[i],
+      zips_created: 0,
+      files_zipped: 0,
+      raw_bytes: 0,
+    }));
+
+    result.rows.forEach(row => {
+      weekdayData[row.day_of_week] = {
+        day_of_week: row.day_of_week,
+        day_name: dayNames[row.day_of_week],
+        zips_created: row.zips_created,
+        files_zipped: toBigIntNumber(row.files_zipped),
+        raw_bytes: toBigIntNumber(row.raw_bytes),
+      };
+    });
+
+    res.json(weekdayData);
+  } catch (error) {
+    console.error('Error fetching weekday stats:', error);
+    res.status(500).json({ error: 'Failed to fetch weekday stats' });
+  }
+});
+
 // Error handling
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);

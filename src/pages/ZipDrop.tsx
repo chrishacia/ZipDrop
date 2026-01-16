@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, type FC } from 'react'
+import { Link } from 'react-router-dom'
 import { Minimatch } from 'minimatch'
 import { usePersistedPatterns } from '../hooks/usePersistedPatterns'
 import { useZipStats } from '../hooks/useZipStats'
@@ -339,9 +340,16 @@ const ZipDrop: FC = () => {
                     <i className="bi bi-archive me-2" aria-hidden="true"></i>
                     ZipDrop
                 </h1>
-                <p className="lead text-muted mb-0">
+                <p className="lead text-muted mb-3">
                     Create ZIP archives from folders with customizable exclusion patterns
                 </p>
+                <Link 
+                    to="/ZipDrop/analytics" 
+                    className="btn btn-outline-primary btn-sm"
+                >
+                    <i className="bi bi-graph-up me-1"></i>
+                    View Analytics Dashboard
+                </Link>
             </header>
 
             {/* Global Community Stats */}
